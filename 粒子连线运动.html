@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>canvas</title>
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById("canvas")
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+    const ctx = canvas.getContext("2d")
+    console.log("🚀 ~ 粒子.html ~ ctx:", ctx)
+
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+    const getRandom = (min, max) => {
+      return Math.random() * (max - min) + min
+    }
+
+    class Point {
+      constructor(x, y) {
+        this.r = 6
+        this.x = getRandom(this.r, canvas.width - this.r)
+        this.y = getRandom(this.r, canvas.height - this.r)
+        this.vx = (Math.random() * 2 - 1) * 0.6
+        console.log("🚀 ~ 粒子.html ~ Point ~ constructor ~ vx:", this.vx)
+        this.vy = (Math.random() * 2 - 1) * 0.6
+      }
+
+      draw() {
+        ctx.beginPath()
+        ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI)
+        ctx.fillStyle = "#fff"
+        ctx.fill()
+      }
+    }
+
+    class Graph {
+      constructor() {
+        this.points = new Array(100).fill(0).map(() => new Point())
+        this.maxDistance = 255
+      }
+
+      draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        ctx.fillStyle = "#000"
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+        for (let i = 0; i < this.points.length; i++) {
+          let p1 = this.points[i]
+          p1.draw()
+
+          for (let j = i + 1; j < this.points.length; j++) {
+            let p2 = this.points[j]
+            const d = Math.sqrt(Math.pow((p2.x - p1.x), 2) + Math.pow((p2.y - p1.y), 2))
+            if (d > this.maxDistance) continue
+            ctx.beginPath()
+            ctx.moveTo(p1.x, p1.y)
+            ctx.lineTo(p2.x, p2.y)
+            ctx.strokeStyle = `rgba(255, 255, 255, ${1 - d / this.maxDistance})`
+            ctx.stroke()
+          }
+        }
+      }
+
+      updatePoints() {
+        const w = canvas.width
+        const h = canvas.height
+        for (let i = 0; i < this.points.length; i++) {
+          const p = this.points[i];
+          // 移动
+          p.x += p.vx;
+          p.y += p.vy;
+
+          // 边界反弹 (并且防止卡在边缘, 修正位置和反转速度)
+          // 左边界 x < 0
+          if (p.x < 0) {
+            p.x = -p.x;                // 镜像回内部
+            p.vx = -p.vx;               // 反向水平速度
+          }
+          // 右边界
+          if (p.x > w) {
+            p.x = 2 * w - p.x;            // 超出部分镜像
+            p.vx = -p.vx;
+          }
+          // 上边界 y < 0
+          if (p.y < 0) {
+            p.y = -p.y;
+            p.vy = -p.vy;
+          }
+          // 下边界
+          if (p.y > h) {
+            p.y = 2 * h - p.y;
+            p.vy = -p.vy;
+          }
+
+          // 额外安全钳位(防止浮点误差导致略超出边界, 但镜像已处理, 此步确保完全在[0,300])
+          p.x = Math.min(canvas.width, Math.max(0, p.x));
+          p.y = Math.min(canvas.height, Math.max(0, p.y));
+        }
+      }
+
+      animate() {
+        this.updatePoints()
+
+        this.draw()
+
+
+        requestAnimationFrame(() => {
+          this.animate()
+        })
+      }
+    }
+
+    const g = new Graph()
+
+    g.draw()
+
+    g.animate()
+  </script>
+</body>
+
+</html>
