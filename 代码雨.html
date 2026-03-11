@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>代码雨</title>
+
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    function getRandomChar() {
+      const chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '!', '@', '#', '$', '%', '^', '&', '*']
+      const i = Math.floor(Math.random() * (chars.length))
+      return chars[i]
+    }
+
+    const dpr = window.devicePixelRatio
+    const cvs = document.getElementById("canvas")
+    const w = window.innerWidth * dpr
+    const h = window.innerHeight * dpr
+    cvs.width = w
+    cvs.height = h
+
+    const fontSize = 24 * dpr
+
+    const ctx = cvs.getContext("2d")
+    ctx.fillRect(0, 0, w, h)
+
+    const columnWidth = fontSize
+    const columnCount = w / columnWidth
+    const nextChars = new Array(columnCount).fill(0)
+
+    ctx.fontSize = fontSize
+    ctx.font = "30px Verdana"
+
+    function draw() {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.1)"
+      ctx.fillRect(0, 0, w, h)
+      for (let i = 0; i < columnCount; i++) {
+        let x = i * columnWidth
+        let y = (nextChars[i] + 1) * columnWidth
+        let char = getRandomChar()
+        ctx.fillStyle = "#07c160"
+        ctx.fillText(char, x, y)
+
+        if(y >= h && Math.random() > 0.66) {
+          nextChars[i] = 0
+        } else {
+          nextChars[i]++
+        }
+      }
+    }
+
+    draw()
+
+    setInterval(draw, 60)
+  </script>
+</body>
+
+</html>
